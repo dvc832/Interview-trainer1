@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interview Trainer — Powered by IBM watsonx</title>
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3349;
+      --text: #e8eaf0;
+      --muted: #8b91b3;
+      --accent: #4f7ef8;
+      --accent2: #7c5cd8;
+      --success: #2ecc71;
+      --warning: #f39c12;
+      --danger: #e74c3c;
+      --radius: 12px;
+      --font: -apple-system, "Segoe UI", system-ui, sans-serif;
+    }
+    html, body { height: 100%; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ── Header ───────────────────────────────────────────────── */
+    header {
+      background: linear-gradient(135deg, #1a1d27 0%, #0f1117 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo {
+      width: 38px; height: 38px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 900; color: #fff;
+      flex-shrink: 0;
+    }
+    .header-title { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+    .header-sub { font-size: 0.78rem; color: var(--muted); margin-top: 1px; }
+    .header-badge {
+      margin-left: auto;
+      background: rgba(79,126,248,0.15);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      font-size: 0.72rem;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    /* ── Layout ───────────────────────────────────────────────── */
+    .app-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      height: calc(100vh - 67px);
+    }
+
+    /* ── Sidebar ──────────────────────────────────────────────── */
+    .sidebar {
+      width: 300px;
+      min-width: 260px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    .sidebar-section {
+      padding: 18px 16px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-section:last-child { border-bottom: none; }
+    .sidebar-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .form-group { margin-bottom: 12px; }
+    .form-group label {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 8px 11px;
+      font-size: 0.84rem;
+      font-family: var(--font);
+      outline: none;
+      transition: border-color 0.2s;
+      resize: vertical;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { border-color: var(--accent); }
+    .form-group textarea { min-height: 100px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 7px;
+      padding: 9px 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.84rem;
+      font-weight: 600;
+      font-family: var(--font);
+      transition: opacity 0.15s, transform 0.1s;
+      text-decoration: none;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: #fff; width: 100%; }
+    .btn-primary:hover:not(:disabled) { opacity: 0.88; }
+    .btn-success { background: var(--success); color: #fff; width: 100%; }
+    .btn-danger { background: var(--danger); color: #fff; width: 100%; }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      width: 100%;
+    }
+    .btn-ghost:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Session Stats ────────────────────────────────────────── */
+    .stats-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+      margin-bottom: 6px;
+    }
+    .stat-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+    }
+    .stat-value { font-size: 1.4rem; font-weight: 800; color: var(--accent); }
+    .stat-label { font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
+
+    /* ── Topic Chips ──────────────────────────────────────────── */
+    .topic-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip {
+      background: rgba(79,126,248,0.12);
+      border: 1px solid rgba(79,126,248,0.3);
+      color: var(--accent);
+      font-size: 0.72rem;
+      padding: 3px 9px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background 0.15s;
+      font-weight: 500;
+    }
+    .chip:hover { background: rgba(79,126,248,0.25); }
+    .chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ── Main Chat Area ───────────────────────────────────────── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      scroll-behavior: smooth;
+    }
+    .chat-messages::-webkit-scrollbar { width: 4px; }
+    .chat-messages::-webkit-scrollbar-track { background: transparent; }
+    .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    /* ── Message Bubbles ──────────────────────────────────────── */
+    .msg { display: flex; gap: 12px; max-width: 820px; }
+    .msg.user { flex-direction: row-reverse; align-self: flex-end; }
+    .msg-avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .msg.agent .msg-avatar { background: var(--accent); color: #fff; }
+    .msg.user .msg-avatar { background: var(--accent2); color: #fff; }
+    .msg-body { max-width: 680px; }
+    .msg-name {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .msg.user .msg-name { text-align: right; }
+    .msg-bubble {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 13px 16px;
+      font-size: 0.9rem;
+      line-height: 1.65;
+      color: var(--text);
+    }
+    .msg.user .msg-bubble {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .msg-bubble pre {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      overflow-x: auto;
+      margin: 8px 0;
+      font-size: 0.82rem;
+    }
+
+    /* ── Score Badge ─────────────────────────────────────────── */
+    .score-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .score-high { background: rgba(46,204,113,0.15); color: var(--success); border: 1px solid rgba(46,204,113,0.3); }
+    .score-mid { background: rgba(243,156,18,0.15); color: var(--warning); border: 1px solid rgba(243,156,18,0.3); }
+    .score-low { background: rgba(231,76,60,0.15); color: var(--danger); border: 1px solid rgba(231,76,60,0.3); }
+
+    /* ── Feedback Card ───────────────────────────────────────── */
+    .feedback-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-top: 10px;
+      font-size: 0.85rem;
+    }
+    .feedback-row { margin-bottom: 7px; }
+    .feedback-row:last-child { margin-bottom: 0; }
+    .feedback-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 3px;
+    }
+    .feedback-label.strengths { color: var(--success); }
+    .feedback-label.improvements { color: var(--warning); }
+    .feedback-label.model { color: var(--accent); }
+    .feedback-label.followup { color: var(--accent2); }
+    .feedback-text { color: var(--text); line-height: 1.55; }
+
+    /* ── Report Panel ────────────────────────────────────────── */
+    .report-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .report-panel h1, .report-panel h2, .report-panel h3 {
+      color: var(--accent);
+      margin: 14px 0 6px;
+    }
+    .report-panel h1 { font-size: 1.2rem; }
+    .report-panel h2 { font-size: 1rem; }
+    .report-panel h3 { font-size: 0.9rem; }
+    .report-panel table {
+      width: 100%; border-collapse: collapse; margin: 10px 0;
+    }
+    .report-panel th, .report-panel td {
+      border: 1px solid var(--border);
+      padding: 7px 11px;
+      text-align: left;
+      font-size: 0.82rem;
+    }
+    .report-panel th { background: var(--surface2); color: var(--muted); font-weight: 600; }
+    .report-panel ul, .report-panel ol { padding-left: 20px; margin: 6px 0; }
+    .recommend-hire { color: var(--success); font-weight: 800; }
+    .recommend-consider { color: var(--warning); font-weight: 800; }
+    .recommend-not { color: var(--danger); font-weight: 800; }
+
+    /* ── Input Area ──────────────────────────────────────────── */
+    .input-area {
+      padding: 16px 24px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+    }
+    .input-row {
+      display: flex; gap: 10px; align-items: flex-end;
+    }
+    .input-row textarea {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-size: 0.9rem;
+      font-family: var(--font);
+      resize: none;
+      outline: none;
+      min-height: 48px;
+      max-height: 180px;
+      transition: border-color 0.2s;
+      line-height: 1.5;
+    }
+    .input-row textarea:focus { border-color: var(--accent); }
+    .send-btn {
+      background: var(--accent);
+      border: none;
+      color: #fff;
+      border-radius: 10px;
+      width: 46px; height: 46px;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: opacity 0.15s;
+    }
+    .send-btn:hover { opacity: 0.85; }
+    .send-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .input-hint {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* ── Spinner ─────────────────────────────────────────────── */
+    .typing-indicator {
+      display: flex; gap: 5px; align-items: center;
+      padding: 13px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      width: fit-content;
+    }
+    .typing-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: bounce 1.2s infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+      40% { transform: translateY(-6px); opacity: 1; }
+    }
+
+    /* ── Welcome Screen ──────────────────────────────────────── */
+    .welcome {
+      text-align: center;
+      padding: 60px 20px;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+    .welcome-icon {
+      font-size: 3rem;
+      margin-bottom: 16px;
+    }
+    .welcome h2 { font-size: 1.5rem; margin-bottom: 8px; }
+    .welcome p { color: var(--muted); font-size: 0.9rem; line-height: 1.65; }
+    .starter-cards {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+      margin-top: 24px; text-align: left;
+    }
+    .starter-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+      font-size: 0.82rem;
+    }
+    .starter-card:hover { border-color: var(--accent); }
+    .starter-card strong { display: block; color: var(--accent); margin-bottom: 4px; font-size: 0.8rem; }
+    .starter-card span { color: var(--muted); }
+
+    /* ── Progress Bar ────────────────────────────────────────── */
+    .progress-bar-wrap {
+      height: 3px; background: var(--surface2);
+      border-radius: 3px; overflow: hidden;
+      margin: 8px 0 12px;
+    }
+    .progress-bar-fill {
+      height: 100%; background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.4s ease;
+    }
+
+    /* ── Responsive ──────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .sidebar { width: 100%; min-width: unset; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+      .app-layout { flex-direction: column; }
+      .starter-cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── Header ─────────────────────────────────────────────────────────── -->
+<header>
+  <div class="logo">IT</div>
+  <div>
+    <div class="header-title">Interview Trainer</div>
+    <div class="header-sub">Adaptive Mock Interviews · Powered by IBM watsonx Granite</div>
+  </div>
+  <span class="header-badge">ibm/granite-4-h-small</span>
+</header>
+
+<!-- ─── App Layout ──────────────────────────────────────────────────────── -->
+<div class="app-layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar">
+
+    <!-- Setup -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">Session Setup</div>
+      <div class="form-group">
+        <label>Your Name</label>
+        <input type="text" id="candidateName" placeholder="e.g. Alex Johnson" value="Candidate" />
+      </div>
+      <div class="form-group">
+        <label>Target Job Role</label>
+        <input type="text" id="jobRole" placeholder="e.g. Senior Software Engineer" />
+      </div>
+      <div class="form-group">
+        <label>Number of Questions</label>
+        <select id="numQuestions">
+          <option value="3">3 (Quick)</option>
+          <option value="5" selected>5 (Standard)</option>
+          <option value="8">8 (Thorough)</option>
+          <option value="10">10 (Full)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Starting Difficulty</label>
+        <select id="difficulty">
+          <option value="easy">Easy</option>
+          <option value="medium" selected>Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Resume (paste text)</label>
+        <textarea id="resumeText" placeholder="Paste your resume content here…" rows="5"></textarea>
+      </div>
+      <button class="btn btn-primary" id="startBtn" onclick="startSession()">
+        ▶ Start Interview Session
+      </button>
+    </div>
+
+    <!-- Session Stats -->
+    <div class="sidebar-section" id="statsSection" style="display:none">
+      <div class="sidebar-label">Session Progress</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="statQ">0</div>
+          <div class="stat-label">Questions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statAvg">—</div>
+          <div class="stat-label">Avg Score</div>
+        </div>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="progressBar" style="width:0%"></div>
+      </div>
+      <div class="topic-chips" id="topicChips"></div>
+    </div>
+
+    <!-- Actions -->
+    <div class="sidebar-section" id="actionsSection" style="display:none">
+      <div class="sidebar-label">Actions</div>
+      <button class="btn btn-success" id="reportBtn" onclick="generateReport()" style="margin-bottom:8px" disabled>
+        📊 Generate Report
+      </button>
+      <button class="btn btn-ghost" onclick="resetSession()">
+        ↺ New Session
+      </button>
+    </div>
+
+  </aside>
+
+  <!-- ── Main Chat ──────────────────────────────────────────────────────── -->
+  <main class="main">
+    <div class="chat-messages" id="chatMessages">
+      <!-- Welcome Screen -->
+      <div class="welcome" id="welcomeScreen">
+        <div class="welcome-icon">🎯</div>
+        <h2>Welcome to Interview Trainer</h2>
+        <p>
+          Fill in your name, target role, and resume on the left, then click
+          <strong>Start Interview Session</strong> to begin your personalised
+          adaptive mock interview powered by IBM watsonx Granite.
+        </p>
+        <div class="starter-cards">
+          <div class="starter-card" onclick="fillDemo('swe')">
+            <strong>Software Engineer</strong>
+            <span>Python, microservices, cloud — 5 questions</span>
+          </div>
+          <div class="starter-card" onclick="fillDemo('ds')">
+            <strong>Data Scientist</strong>
+            <span>ML, statistics, Python — 5 questions</span>
+          </div>
+          <div class="starter-card" onclick="fillDemo('pm')">
+            <strong>Product Manager</strong>
+            <span>Strategy, roadmap, user research — 5 questions</span>
+          </div>
+          <div class="starter-card" onclick="fillDemo('devops')">
+            <strong>DevOps Engineer</strong>
+            <span>CI/CD, Kubernetes, monitoring — 5 questions</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="input-area" id="inputArea" style="display:none">
+      <div class="input-row">
+        <textarea
+          id="userInput"
+          placeholder="Type your answer here… (Shift+Enter for new line)"
+          rows="2"
+          onkeydown="handleKey(event)"
+        ></textarea>
+        <button class="send-btn" id="sendBtn" onclick="submitAnswer()" title="Send answer">
+          ➤
+        </button>
+      </div>
+      <div class="input-hint" id="inputHint">Session not started — configure settings and click Start.</div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ──────────────────────────────────────────────────────────────────────────────
+// State
+// ──────────────────────────────────────────────────────────────────────────────
+const API_BASE = "http://localhost:5000/api";
+
+const state = {
+  active: false,
+  candidateName: "",
+  jobRole: "",
+  numQuestions: 5,
+  difficulty: "medium",
+  resumeText: "",
+  profile: null,
+  topics: [],
+  currentTopicIndex: 0,
+  currentQuestion: null,
+  currentHints: "",
+  previousQuestions: [],
+  qaHistory: [],
+  waitingForAnswer: false,
+  consecutiveHigh: 0,
+  consecutiveLow: 0,
+};
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Demo Prefill
+// ──────────────────────────────────────────────────────────────────────────────
+const demos = {
+  swe: {
+    name: "Alex Johnson",
+    role: "Senior Software Engineer",
+    resume: `Alex Johnson — Senior Software Engineer
+5+ years building distributed systems at TechCorp.
+Skills: Python, Java, Go, REST APIs, Kafka, PostgreSQL, Redis, AWS, Docker, Kubernetes.
+Led migration from monolith to microservices (30% latency improvement).
+BS Computer Science, MIT. Open source contributor.`,
+  },
+  ds: {
+    name: "Maria Chen",
+    role: "Data Scientist",
+    resume: `Maria Chen — Data Scientist
+4 years at DataLabs building ML models for fraud detection and recommendation.
+Skills: Python, R, scikit-learn, TensorFlow, PyTorch, SQL, Spark, Tableau.
+Published 2 papers on NLP. PhD candidate in Statistics, Stanford.`,
+  },
+  pm: {
+    name: "James Wright",
+    role: "Product Manager",
+    resume: `James Wright — Senior Product Manager
+6 years at SaaS companies driving 0-to-1 product launches.
+Led team of 20 engineers, grew DAU 3x in 18 months.
+Skills: Agile, OKRs, user research, A/B testing, SQL, Figma.
+MBA Harvard Business School.`,
+  },
+  devops: {
+    name: "Sara Kim",
+    role: "DevOps Engineer",
+    resume: `Sara Kim — DevOps / SRE Engineer
+5 years at CloudOps managing large-scale infrastructure.
+Skills: Kubernetes, Helm, Terraform, Ansible, Jenkins, GitHub Actions, Prometheus, Grafana, AWS, GCP.
+Reduced MTTR by 60% through improved alerting. SRE certification.`,
+  },
+};
+
+function fillDemo(type) {
+  const d = demos[type];
+  document.getElementById("candidateName").value = d.name;
+  document.getElementById("jobRole").value = d.role;
+  document.getElementById("resumeText").value = d.resume;
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// UI Helpers
+// ──────────────────────────────────────────────────────────────────────────────
+function appendMessage(role, content, extra) {
+  const wrap = document.getElementById("chatMessages");
+  const welcome = document.getElementById("welcomeScreen");
+  if (welcome) welcome.remove();
+
+  const div = document.createElement("div");
+  div.className = `msg ${role}`;
+
+  const avatar = document.createElement("div");
+  avatar.className = "msg-avatar";
+  avatar.textContent = role === "agent" ? "AI" : state.candidateName.charAt(0).toUpperCase() || "U";
+
+  const body = document.createElement("div");
+  body.className = "msg-body";
+
+  const name = document.createElement("div");
+  name.className = "msg-name";
+  name.textContent = role === "agent" ? "Interview Trainer" : state.candidateName;
+
+  const bubble = document.createElement("div");
+  bubble.className = "msg-bubble";
+  bubble.innerHTML = formatMessage(content);
+
+  if (extra) bubble.appendChild(extra);
+
+  body.appendChild(name);
+  body.appendChild(bubble);
+  div.appendChild(avatar);
+  div.appendChild(body);
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+  return bubble;
+}
+
+function formatMessage(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.*?)\*/g, "<em>$1</em>")
+    .replace(/`(.*?)`/g, "<code>$1</code>")
+    .replace(/\n/g, "<br>");
+}
+
+function showTyping() {
+  const wrap = document.getElementById("chatMessages");
+  const div = document.createElement("div");
+  div.className = "msg agent";
+  div.id = "typingIndicator";
+  div.innerHTML = `
+    <div class="msg-avatar">AI</div>
+    <div class="msg-body">
+      <div class="msg-name">Interview Trainer</div>
+      <div class="typing-indicator">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+    </div>`;
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+function hideTyping() {
+  const el = document.getElementById("typingIndicator");
+  if (el) el.remove();
+}
+
+function setLoading(loading) {
+  document.getElementById("sendBtn").disabled = loading;
+  document.getElementById("startBtn").disabled = loading;
+}
+
+function updateStats() {
+  const q = state.qaHistory.length;
+  document.getElementById("statQ").textContent = q;
+  if (q > 0) {
+    const avg = (state.qaHistory.reduce((s, x) => s + x.score, 0) / q).toFixed(1);
+    document.getElementById("statAvg").textContent = avg;
+  }
+  const pct = Math.round((q / state.numQuestions) * 100);
+  document.getElementById("progressBar").style.width = pct + "%";
+  document.getElementById("reportBtn").disabled = q < 1;
+}
+
+function renderTopics(topics) {
+  const container = document.getElementById("topicChips");
+  container.innerHTML = "";
+  topics.forEach((t, i) => {
+    const chip = document.createElement("span");
+    chip.className = "chip" + (i === state.currentTopicIndex ? " active" : "");
+    chip.textContent = t;
+    container.appendChild(chip);
+  });
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// API Calls
+// ──────────────────────────────────────────────────────────────────────────────
+async function apiCall(endpoint, body) {
+  const res = await fetch(`${API_BASE}${endpoint}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error || res.statusText);
+  }
+  return res.json();
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Session Flow
+// ──────────────────────────────────────────────────────────────────────────────
+async function startSession() {
+  const candidateName = document.getElementById("candidateName").value.trim();
+  const jobRole = document.getElementById("jobRole").value.trim();
+  const resumeText = document.getElementById("resumeText").value.trim();
+
+  if (!jobRole) { alert("Please enter a target job role."); return; }
+  if (!resumeText) { alert("Please paste your resume text."); return; }
+
+  state.candidateName = candidateName || "Candidate";
+  state.jobRole = jobRole;
+  state.numQuestions = parseInt(document.getElementById("numQuestions").value);
+  state.difficulty = document.getElementById("difficulty").value;
+  state.resumeText = resumeText;
+  state.qaHistory = [];
+  state.previousQuestions = [];
+  state.currentTopicIndex = 0;
+  state.consecutiveHigh = 0;
+  state.consecutiveLow = 0;
+  state.active = true;
+
+  // Show chat + stats
+  document.getElementById("statsSection").style.display = "block";
+  document.getElementById("actionsSection").style.display = "block";
+  document.getElementById("inputArea").style.display = "block";
+  document.getElementById("inputHint").textContent = "Analysing your resume — please wait…";
+  setLoading(true);
+  showTyping();
+
+  try {
+    // Step 1: Parse resume
+    const profile = await apiCall("/parse_resume", { resume_text: resumeText, job_role: jobRole });
+    state.profile = profile;
+    state.topics = profile.suggested_topics.split(",").map(t => t.trim()).filter(Boolean);
+    hideTyping();
+
+    appendMessage("agent", `
+👋 Hello **${state.candidateName}**! I've analysed your resume for the **${jobRole}** role.
+
+**Profile Summary:** ${profile.summary}
+
+**Experience Level:** ${profile.experience_level}
+**Key Skills:** ${profile.key_skills}
+
+I'll ask you **${state.numQuestions} questions** covering these topics: **${profile.suggested_topics}**
+
+Starting at **${state.difficulty}** difficulty. I'll adapt as we go. Ready? Let's begin! 🚀`);
+
+    renderTopics(state.topics);
+    updateStats();
+
+    // Step 2: Ask first question
+    await askNextQuestion();
+  } catch (e) {
+    hideTyping();
+    appendMessage("agent", `⚠️ Error starting session: ${e.message}\n\nPlease ensure the backend is running on http://localhost:5000`);
+  } finally {
+    setLoading(false);
+  }
+}
+
+async function askNextQuestion() {
+  if (state.qaHistory.length >= state.numQuestions) {
+    await endInterview();
+    return;
+  }
+
+  const topic = state.topics[state.currentTopicIndex % state.topics.length];
+  state.currentTopicIndex++;
+  renderTopics(state.topics);
+
+  setLoading(true);
+  showTyping();
+  document.getElementById("inputHint").textContent = "Generating question…";
+
+  try {
+    const qData = await apiCall("/generate_question", {
+      job_role: state.jobRole,
+      topic,
+      difficulty: state.difficulty,
+      previous_questions: state.previousQuestions.join("\n"),
+    });
+
+    hideTyping();
+    state.currentQuestion = qData.question;
+    state.currentHints = qData.hints;
+    state.previousQuestions.push(qData.question);
+    state.waitingForAnswer = true;
+
+    const qNum = state.qaHistory.length + 1;
+    const diffLabel = { easy: "🟢", medium: "🟡", hard: "🔴" }[qData.difficulty] || "⚪";
+
+    appendMessage("agent", `**Question ${qNum}/${state.numQuestions}** ${diffLabel} — *${qData.topic}*\n\n${qData.question}`);
+
+    document.getElementById("inputHint").textContent = `Type your answer and press Enter to submit.`;
+    document.getElementById("userInput").focus();
+  } catch (e) {
+    hideTyping();
+    appendMessage("agent", `⚠️ Error generating question: ${e.message}`);
+  } finally {
+    setLoading(false);
+  }
+}
+
+async function submitAnswer() {
+  if (!state.waitingForAnswer) return;
+  const input = document.getElementById("userInput");
+  const answer = input.value.trim();
+  if (!answer) return;
+
+  input.value = "";
+  state.waitingForAnswer = false;
+  appendMessage("user", answer);
+
+  setLoading(true);
+  showTyping();
+  document.getElementById("inputHint").textContent = "Evaluating your answer…";
+
+  try {
+    const eval_ = await apiCall("/evaluate_answer", {
+      question: state.currentQuestion,
+      answer,
+      job_role: state.jobRole,
+      hints: state.currentHints,
+    });
+
+    hideTyping();
+
+    // Store Q&A
+    state.qaHistory.push({
+      question: state.currentQuestion,
+      answer,
+      score: eval_.score,
+      strengths: eval_.strengths,
+      improvements: eval_.improvements,
+    });
+
+    // Adapt difficulty
+    if (eval_.score >= 8) {
+      state.consecutiveHigh++;
+      state.consecutiveLow = 0;
+      if (state.consecutiveHigh >= 2 && state.difficulty !== "hard") {
+        state.difficulty = state.difficulty === "easy" ? "medium" : "hard";
+        state.consecutiveHigh = 0;
+      }
+    } else if (eval_.score < 4) {
+      state.consecutiveLow++;
+      state.consecutiveHigh = 0;
+      if (state.consecutiveLow >= 2 && state.difficulty !== "easy") {
+        state.difficulty = state.difficulty === "hard" ? "medium" : "easy";
+        state.consecutiveLow = 0;
+      }
+    } else {
+      state.consecutiveHigh = 0;
+      state.consecutiveLow = 0;
+    }
+
+    // Score badge
+    const scoreClass = eval_.score >= 7 ? "score-high" : eval_.score >= 4 ? "score-mid" : "score-low";
+    const feedbackEl = document.createElement("div");
+    feedbackEl.className = "feedback-card";
+    feedbackEl.innerHTML = `
+      <div class="score-badge ${scoreClass}">Score: ${eval_.score}/10</div>
+      <div class="feedback-row">
+        <div class="feedback-label strengths">✅ Strengths</div>
+        <div class="feedback-text">${eval_.strengths}</div>
+      </div>
+      <div class="feedback-row">
+        <div class="feedback-label improvements">💡 Improvements</div>
+        <div class="feedback-text">${eval_.improvements}</div>
+      </div>
+      <div class="feedback-row">
+        <div class="feedback-label model">📖 Model Answer</div>
+        <div class="feedback-text">${eval_.model_answer}</div>
+      </div>
+    `;
+    appendMessage("agent", `Here's my feedback on your answer:`, feedbackEl);
+    updateStats();
+
+    // Continue or end
+    if (state.qaHistory.length < state.numQuestions) {
+      setTimeout(() => askNextQuestion(), 800);
+    } else {
+      await endInterview();
+    }
+  } catch (e) {
+    hideTyping();
+    appendMessage("agent", `⚠️ Error evaluating answer: ${e.message}`);
+    state.waitingForAnswer = true;
+  } finally {
+    setLoading(false);
+  }
+}
+
+async function endInterview() {
+  state.waitingForAnswer = false;
+  const avg = (state.qaHistory.reduce((s, x) => s + x.score, 0) / state.qaHistory.length).toFixed(1);
+  appendMessage("agent", `🎉 **Interview complete!**
+
+You answered all **${state.qaHistory.length} questions** with an average score of **${avg}/10**.
+
+Click **📊 Generate Report** in the sidebar to get your full performance analysis and hiring recommendation.`);
+  document.getElementById("inputHint").textContent = "Interview complete — click Generate Report.";
+  document.getElementById("reportBtn").disabled = false;
+}
+
+async function generateReport() {
+  if (state.qaHistory.length === 0) {
+    alert("No Q&A history yet. Complete the interview first.");
+    return;
+  }
+
+  setLoading(true);
+  showTyping();
+  document.getElementById("inputHint").textContent = "Generating performance report…";
+
+  try {
+    const report = await apiCall("/generate_report", {
+      candidate_name: state.candidateName,
+      job_role: state.jobRole,
+      qa_history: state.qaHistory,
+    });
+
+    hideTyping();
+
+    const recommendClass = report.recommendation === "Hire"
+      ? "recommend-hire"
+      : report.recommendation === "Consider"
+      ? "recommend-consider"
+      : "recommend-not";
+
+    const reportEl = document.createElement("div");
+    reportEl.className = "report-panel";
+    reportEl.innerHTML = renderMarkdown(report.report_markdown) +
+      `<hr style="border-color:var(--border);margin:14px 0">
+       <div>Overall Score: <strong>${report.overall_score}/10</strong> &nbsp;|&nbsp; Recommendation: <span class="${recommendClass}">${report.recommendation}</span></div>`;
+
+    appendMessage("agent", `📊 **Performance Report — ${state.candidateName}**`, reportEl);
+  } catch (e) {
+    hideTyping();
+    appendMessage("agent", `⚠️ Error generating report: ${e.message}`);
+  } finally {
+    setLoading(false);
+  }
+}
+
+function renderMarkdown(md) {
+  return md
+    .replace(/^### (.*$)/gm, "<h3>$1</h3>")
+    .replace(/^## (.*$)/gm, "<h2>$1</h2>")
+    .replace(/^# (.*$)/gm, "<h1>$1</h1>")
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.*?)\*/g, "<em>$1</em>")
+    .replace(/`(.*?)`/g, "<code>$1</code>")
+    .replace(/^\| (.*)/gm, (line) => {
+      const cells = line.split("|").filter(c => c.trim());
+      return "<tr>" + cells.map(c => `<td>${c.trim()}</td>`).join("") + "</tr>";
+    })
+    .replace(/(<tr>.*<\/tr>)/gs, "<table>$1</table>")
+    .replace(/^- (.*$)/gm, "<li>$1</li>")
+    .replace(/(<li>.*<\/li>)/gs, "<ul>$1</ul>")
+    .replace(/\n{2,}/g, "<br><br>")
+    .replace(/\n/g, "<br>");
+}
+
+function resetSession() {
+  if (!confirm("Start a new session? This will clear your current progress.")) return;
+  state.active = false;
+  state.qaHistory = [];
+  state.previousQuestions = [];
+  state.currentQuestion = null;
+  state.waitingForAnswer = false;
+
+  const chatMessages = document.getElementById("chatMessages");
+  chatMessages.innerHTML = `
+    <div class="welcome" id="welcomeScreen">
+      <div class="welcome-icon">🎯</div>
+      <h2>Welcome to Interview Trainer</h2>
+      <p>Fill in your name, target role, and resume on the left, then click <strong>Start Interview Session</strong>.</p>
+      <div class="starter-cards">
+        <div class="starter-card" onclick="fillDemo('swe')"><strong>Software Engineer</strong><span>Python, microservices, cloud</span></div>
+        <div class="starter-card" onclick="fillDemo('ds')"><strong>Data Scientist</strong><span>ML, statistics, Python</span></div>
+        <div class="starter-card" onclick="fillDemo('pm')"><strong>Product Manager</strong><span>Strategy, roadmap, users</span></div>
+        <div class="starter-card" onclick="fillDemo('devops')"><strong>DevOps Engineer</strong><span>CI/CD, Kubernetes</span></div>
+      </div>
+    </div>`;
+
+  document.getElementById("inputArea").style.display = "none";
+  document.getElementById("statsSection").style.display = "none";
+  document.getElementById("actionsSection").style.display = "none";
+  updateStats();
+}
+
+function handleKey(e) {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    submitAnswer();
+  }
+}
+</script>
+</body>
+</html>
